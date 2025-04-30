@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import AppLogo from "./navbar/logo";
-import { BsGrid1X2Fill } from "react-icons/bs";
+import { BsGrid1X2Fill, BsPeople } from "react-icons/bs";
 import { BiCategory } from "react-icons/bi";
 import { MdFoodBank } from "react-icons/md";
 
@@ -44,6 +44,18 @@ const DashboardAside = () => {
           to={"/dashboard/categories"}
         >
           <BiCategory size={16} /> categories
+        </NavLink>
+        <NavLink
+          className={({ isActive, isPending }) =>
+            isPending
+              ? "pending"
+              : isActive
+              ? " btn btn-ghost text-secondary justify-start"
+              : " btn btn-ghost justify-start"
+          }
+          to={"/dashboard/categories"}
+        >
+          <BsPeople size={16} /> Users
         </NavLink>
       </div>
     </aside>
