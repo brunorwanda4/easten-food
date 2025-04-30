@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-    themes: light --default, dark --prefersdark, cupcake, cmyk, acid, winter,
-      valentine, synthwave, business, night,retro,fantasy, forest,bumblebee, black;
-  }
-  
+  themes: light --default, dark --prefersdark, cupcake, cmyk, acid, winter,
+    valentine, synthwave, business, night,lofi, retro, fantasy, forest, bumblebee,
+    black;
+}
+
+body {
+  @apply bg-base-200;
+}
