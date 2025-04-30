@@ -1,0 +1,2 @@
+export const marketImage = "https://img.freepik.com/free-photo/african-american-woman-choose-honey-pot-supermarket-against-her-afro-friends-with-shopping-cart_627829-520.jpg?t=st=1746015080~exp=1746018680~hmac=add0ffd49ec211e6db7cb6fb960a62657e82fca9db5a9870ed9428d3fd20a0a3&w=1380"
+export const girlsImage ="https://img.freepik.com/free-photo/group-five-african-womans-walking-supermarket-with-shopping-carts_627829-597.jpg?t=st=1746015360~exp=1746018960~hmac=8857437d1dea00c19f192e09d12f1ecd9276b9a7905c41068acf38727784c04f&w=1380"
