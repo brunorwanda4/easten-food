@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark, emerald;
+}
+
+@theme {
+  --font-display: "Georgia", serif;
+}
+
+.basic-title {
+  @apply text-2xl font-medium
+}  

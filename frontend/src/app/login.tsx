@@ -1,0 +1,229 @@
+// src/components/Login.tsx
+import { useState, ChangeEvent, FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+// Define types for the state and props
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface LoginProps {
+  // Optional function to call after successful login
+  onLoginSuccess?: (token: string, user: PublicUser) => void;
+}
+
+// Define the expected API response structure for a successful login
+interface LoginApiResponseSuccess {
+  success: true;
+  message: string;
+  token: string; // The JWT token from the backend
+  user: PublicUser; // Public user data from the backend
+}
+
+// Define the expected API response structure for a failed login
+interface LoginApiResponseError {
+  success: false;
+  message: string;
+  // Optional: Add other error details if backend provides them
+}
+
+// Union type for the possible API responses
+type LoginApiResponse = LoginApiResponseSuccess | LoginApiResponseError;
+
+// Assuming you have a PublicUser interface defined somewhere,
+// or you can define it here to match the backend response structure
+interface PublicUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string; // Or Date, depending on how your backend serializes it
+}
+
+function Login({ onLoginSuccess }: LoginProps) {
+  const [formData, setFormData] = useState<LoginData>({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+    // Clear messages when user starts typing
+    setError("");
+    setSuccess("");
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsLoading(true);
+
+    if (!formData.email || !formData.password) {
+      setError("Email and password are required.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError("Please enter a valid email address.");
+      setIsLoading(false);
+      return;
+    }
+    const dataToSend: LoginData = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5001/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      const result: LoginApiResponse = await response.json();
+
+      if (!response.ok) {
+        setError(
+          result.message || `Login failed with status: ${response.status}`
+        );
+      } else {
+        const successResult = result as LoginApiResponseSuccess;
+
+        setSuccess(successResult.message || "Login successful!");
+
+        localStorage.setItem("authToken", successResult.token);
+
+        localStorage.setItem("userInfo", JSON.stringify(successResult.user));
+
+        navigate("/dashboard", { replace: true });
+        if (onLoginSuccess) {
+          onLoginSuccess(successResult.token, successResult.user);
+        }
+      }
+    } catch (err) {
+      console.error("Login fetch error:", err);
+      setError("Could not connect to the server. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4 min-h-screen flex flex-col items-center pt-10">
+      <div className="card bg-base-100 w-full max-w-lg shrink-0 border shadow mx-auto">
+        <form className="card-body" onSubmit={handleSubmit}>
+          <div  className=" flex items-center justify-center">
+          <h2 className="card-title text-2xl mb-4 text-center ">Login</h2>
+          </div>
+
+          {error && (
+            <div role="alert" className="alert alert-error mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>Error! {error}</span>
+            </div>
+          )}
+
+          {success && (
+            <div role="alert" className="alert alert-success mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{success}</span>
+            </div>
+          )}
+
+          {/* Email */}
+          <div className="form-control mt-4 flex flex-col ">
+            <label className="label" htmlFor="email">
+              <span className="label-text">Email</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="john.doe@example.com"
+              className="input input-bordered w-full"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Password */}
+          <div className="form-control mt-4 flex flex-col">
+            <label className="label" htmlFor="password">
+              <span className="label-text">Password</span>
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              className="input input-bordered w-full"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="form-control mt-6">
+            <button
+              type="submit"
+              className="btn btn-secondary w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                "Login"
+              )}
+            </button>
+          </div>
+          <Link to="/sign-up" className="mr-4 text-blue-600 hover:underline">
+            Create account
+          </Link>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default Login;
