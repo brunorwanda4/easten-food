@@ -6,12 +6,8 @@ import { ProductRow, ProductWithCategory, CreateProductRequestBody, UpdateProduc
 import { OkPacket, RowDataPacket } from 'mysql2/promise';
 import { ParamsDictionary } from 'express-serve-static-core'; // Import ParamsDictionary
 
-/**
- * Get all products, optionally with category name.
- */
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
-        // Join with categories table to get category name
         const query = `
             SELECT
                 p.id,
@@ -35,10 +31,6 @@ export const getAllProducts = async (req: Request, res: Response) => {
     }
 };
 
-/**
- * Get a single product by ID, with category name.
- * Explicitly type Request to include 'id' in params.
- */
 export const getProductById = async (req: Request<{ id: string }>, res: Response) => {
     const productId = req.params.id;
 
@@ -71,9 +63,6 @@ export const getProductById = async (req: Request<{ id: string }>, res: Response
     }
 };
 
-/**
- * Create a new product.
- */
 export const createProduct = async (req: Request<{}, {}, CreateProductRequestBody>, res: Response) => {
     const { name, categoryId } = req.body;
 
@@ -101,7 +90,6 @@ export const createProduct = async (req: Request<{}, {}, CreateProductRequestBod
 
         console.log(`Product created with ID: ${result.insertId}`);
 
-        // Fetch the newly created product with category name to return it
          const [newProduct] = await pool.query<ProductWithCategory[]>(`
             SELECT
                 p.id,
@@ -131,10 +119,7 @@ export const createProduct = async (req: Request<{}, {}, CreateProductRequestBod
     }
 };
 
-/**
- * Update an existing product by ID.
- * Explicitly type Request to include 'id' in params.
- */
+
 export const updateProduct = async (req: Request<{ id: string }, {}, UpdateProductRequestBody>, res: Response) => {
     const productId = req.params.id;
     const { name, categoryId } = req.body;
@@ -143,7 +128,6 @@ export const updateProduct = async (req: Request<{ id: string }, {}, UpdateProdu
         return res.status(400).json({ success: false, message: 'At least product name or category ID must be provided for update.' });
     }
 
-    // Optional: Validate if categoryId exists if provided and not null
      if (categoryId !== undefined && categoryId !== null) {
         try {
             const [categories] = await pool.query<CategoryRow[]>('SELECT id FROM categories WHERE id = ? LIMIT 1', [categoryId]);
@@ -158,13 +142,11 @@ export const updateProduct = async (req: Request<{ id: string }, {}, UpdateProdu
 
 
     try {
-        // Check if the product exists
          const [existingProducts] = await pool.query<ProductRow[]>('SELECT id FROM products WHERE id = ? LIMIT 1', [productId]);
         if (existingProducts.length === 0) {
             return res.status(404).json({ success: false, message: 'Product not found.' });
         }
 
-        // Build the update query dynamically based on provided fields
         const updates: string[] = [];
         const values: (string | number | null)[] = [];
 
@@ -172,30 +154,26 @@ export const updateProduct = async (req: Request<{ id: string }, {}, UpdateProdu
             updates.push('name = ?');
             values.push(name);
         }
-        if (categoryId !== undefined) { // Allow updating to null
+        if (categoryId !== undefined) { 
              updates.push('category_id = ?');
              values.push(categoryId);
         }
 
         if (updates.length === 0) {
-            // This case should be caught by the initial check, but good safeguard
             return res.status(400).json({ success: false, message: 'No valid fields provided for update.' });
         }
 
         const updateQuery = `UPDATE products SET ${updates.join(', ')} WHERE id = ?`;
-        values.push(productId); // Add product ID to the end of values
+        values.push(productId); 
 
         const [result] = await pool.query<OkPacket>(updateQuery, values);
 
         if (result.affectedRows === 0) {
-             // This case should ideally not be hit if the product was found above,
-             // but it's a good safeguard.
             return res.status(404).json({ success: false, message: 'Product not found or no changes made.' });
         }
 
         console.log(`Product updated with ID: ${productId}`);
 
-        // Fetch the updated product with category name to return it
          const [updatedProduct] = await pool.query<ProductWithCategory[]>(`
             SELECT
                 p.id,
@@ -225,10 +203,7 @@ export const updateProduct = async (req: Request<{ id: string }, {}, UpdateProdu
     }
 };
 
-/**
- * Delete a product by ID.
- * Explicitly type Request to include 'id' in params.
- */
+
 export const deleteProduct = async (req: Request<{ id: string }>, res: Response) => {
     const productId = req.params.id;
 

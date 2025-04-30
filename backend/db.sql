@@ -10,9 +10,9 @@ CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE, -- Ensure emails are unique
-    password_hash VARCHAR(255) NOT NULL, -- Store the hashed password
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Track when the user signed up
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 
 CREATE INDEX idx_email ON users(email);
@@ -20,7 +20,7 @@ CREATE INDEX idx_email ON users(email);
 
 CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE, -- Added UNIQUE constraint to category names
+    name VARCHAR(100) NOT NULL UNIQUE, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -29,5 +29,5 @@ CREATE TABLE products (
     name VARCHAR(100) NOT NULL,
     category_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL -- Or ON DELETE CASCADE, ON DELETE RESTRICT, etc.
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL 
 );
